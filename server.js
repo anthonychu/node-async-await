@@ -3,18 +3,16 @@ let fetch = require('node-fetch');
 
 let app = express();
 
-function getObject(url) {
-  return fetch(url).then(res => res.json());
-}
-
 
 // async/await version
 
-function getUserAsync(username) {
-  return fetch('https://api.github.com/users/' + username)
-    .then(async res => {
-      return { user: await res.json(), found: res.status === 200 };
-    });
+async function getUserAsync(username) {
+  let res = await fetch('https://api.github.com/users/' + username);
+  return { user: await res.json(), found: res.status === 200 };
+}
+
+async function getObjectAsync(url) {
+  return (await fetch(url)).json();
 }
 
 app.get('/api/async-await/users/:username', async (req, res) => {
@@ -29,7 +27,7 @@ app.get('/api/async-await/users/:username', async (req, res) => {
 
     let {user} = userResult;
     let {repos_url, followers_url} = user;
-    let [repos, followers] = await Promise.all([getObject(repos_url), getObject(followers_url)]);
+    let [repos, followers] = await Promise.all([getObjectAsync(repos_url), getObjectAsync(followers_url)]);
     user.repos = repos;
     user.followers = followers;
     res.send(user);
@@ -49,6 +47,10 @@ function getUser(username) {
           return { user, found: res.status === 200 }
         });
     });
+}
+
+function getObject(url) {
+  return fetch(url).then(res => res.json());
 }
 
 app.get('/api/promises/users/:username', (req, res) => {
