@@ -1,13 +1,13 @@
-let express = require('express');
-let fetch = require('node-fetch');
+const express = require('express');
+const fetch = require('node-fetch');
 
-let app = express();
+const app = express();
 
 
 // async/await version
 
 async function getUserAsync(username) {
-  let res = await fetch('https://api.github.com/users/' + username);
+  const res = await fetch('https://api.github.com/users/' + username);
   return { user: await res.json(), found: res.status === 200 };
 }
 
@@ -17,17 +17,17 @@ async function getObjectAsync(url) {
 
 app.get('/api/async-await/users/:username', async (req, res) => {
   try {
-    let {username} = req.params;
-    let userResult = await getUserAsync(username);
+    const {username} = req.params;
+    const userResult = await getUserAsync(username);
 
     if (!userResult.found) {
       res.status(404).end();
       return;
     }
 
-    let {user} = userResult;
-    let {repos_url, followers_url} = user;
-    let [repos, followers] = await Promise.all([getObjectAsync(repos_url), getObjectAsync(followers_url)]);
+    const {user} = userResult;
+    const {repos_url, followers_url} = user;
+    const [repos, followers] = await Promise.all([getObjectAsync(repos_url), getObjectAsync(followers_url)]);
     user.repos = repos;
     user.followers = followers;
     res.send(user);
@@ -54,7 +54,7 @@ function getObject(url) {
 }
 
 app.get('/api/promises/users/:username', (req, res) => {
-  let {username} = req.params;
+  const {username} = req.params;
   getUser(username)
     .then(userResult => {
       if (!userResult.found) {
@@ -62,11 +62,11 @@ app.get('/api/promises/users/:username', (req, res) => {
         return;
       }
 
-      let {user} = userResult;
-      let {repos_url, followers_url} = user;
+      const {user} = userResult;
+      const {repos_url, followers_url} = user;
       return Promise.all([getObject(repos_url), getObject(followers_url)])
         .then(results => {
-          let [repos, followers] = results;
+          const [repos, followers] = results;
           user.repos = repos;
           user.followers = followers;
           res.send(user);
@@ -75,6 +75,6 @@ app.get('/api/promises/users/:username', (req, res) => {
     .catch(e => res.status(500).end());
 });
 
-let port = process.env.PORT || 3000;
-app.listen(port, () => 
+const port = process.env.PORT || 3000;
+app.listen(port, () =>
   console.log(`Example app listening on port ${port}!`));
